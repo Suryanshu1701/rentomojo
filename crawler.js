@@ -45,24 +45,25 @@ var result = new Array();
 //crawler function
 request(url, function(err, resp, body){
   $ = cheerio.load(body);
-  links = $('a'); //jquery get all hyperlinks
+  links = $('a'); 
   $(links).each(function(i, link){
 
-    
-
+ //this array contains all urls after crawling   
 a.push($(link).attr('href'));
     });
 
 
-countIncrease(a,m);
-forparameter(a,m,m1);
-
-resultSet(m,m1,result);
-insertion(con,m,m1,result);
+referenceCounter(a,m);
+parameterList(a,m1);
+referenceCountBuild(m,m1,result);
+insertionOfReferenceCount(con,m,m1,result);
+parameterInsertion(con,m1);
 
 });
 
-function countIncrease(a,m)
+
+//function to count number of parameters
+function referenceCounter(a,m)
   {
 for(var j=0;j<a.length;j++)
 {
@@ -79,14 +80,14 @@ for(var i=0;i<a.length;i++)
     
     m.set(array[0],m.get(array[0])+1);
    
-  // console.log(array[0]+"-----"+array[1]);
- //  console.log(m.get(array[0]));
-  //if(m.get(a[i]))
+  
 
 }
  }
 
-function forparameter(a,m,m1)
+
+//function for parameter insertion 
+function parameterList(a,m1)
 {
     for(var j=0;j<a.length;j++)
     {
@@ -103,12 +104,13 @@ function forparameter(a,m,m1)
         m1.get(array[0]).push(array[1]);
       //  console(m1.get(array[0]))
     
- //   console.log(m1.get(array[0]));
+  // console.log(m1.get(array[0]));
     }
     
 }
 
-function resultSet(m,m1,result)
+//function for reference count insertion
+function referenceCountBuild(m,m1,result)
 {
     
 
@@ -119,25 +121,69 @@ function resultSet(m,m1,result)
         result.push([key,value]);
     }
 
-  // result.push([2,2]);
-    
+ 
 }
 
-function insertion(con,m,m1,result)
+
+//function for insertion of list of parameters
+function parameterInsertion(con,m1)
 {
-    // con.connect(function(err) {
-    //     if (err) throw err;
-        console.log("Connected!");
+    for (var entry of m1.entries()) {
+        var key = entry[0],
+            value = entry[1];
+
+        var  string = "";
+            if(value.length > 1)
+            {for(let i=0;i<value.length;i++)
+          
+             {  
+                  if(value[i])
+                string = string + value[i]+",";
+            }
+        }
+        else 
+        string = " ";
+     
+     let sql1 = "UPDATE mydb.crawler SET references_number = 1 WHERE url_name = ? ";
+     var x = "https://medium.com/";
+     con.query(sql1,x,function (err) {
+        if (err) throw err;
+       // console.log("Number of records inserted: ");
+    
+    });
+
+     let sql = "UPDATE mydb.crawler SET parameters = ? WHERE url_name = ?";
+           
+           
+ 
+    let data = [string, key];
+     
+        con.query(sql,data, function (err) {
+            if (err) throw err;
+           // console.log("Number of records inserted: ");
+        
+        });
+
+}
+}
+
+
+
+//function for insertion of count of references occured
+function insertionOfReferenceCount(con,m,m1,result)
+{
+    
+       // console.log("Connected!");
         var sql = "INSERT INTO mydb.crawler (url_name,references_number ) VALUES ?";
 
         var values = result;
         con.query(sql, [values], function (err) {
             if (err) throw err;
-            console.log("Number of records inserted: ");
+          //  console.log("Number of records inserted: ");
         
         });
 
-     //   console.log(result);
+     
       }
 
 
